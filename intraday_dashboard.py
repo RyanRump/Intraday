@@ -221,7 +221,24 @@ if st.button("Run Live Prediction"):
             data_for_signals = df.tail(20) if view_option == "Last 20 Bars (Zoomed In)" else df
             mode = "short" if view_option == "Last 20 Bars (Zoomed In)" else "full"
             scores = compute_signals(data_for_signals, mode=mode)
-            score = calculate_direction_score(signal_weights, scores)
+            
+            signal_weights = {
+                "short": {
+                    "momentum_technical": 0.5,
+                    "volume_liquidity_heatmaps": 0.3,
+                    "random_noise": 0.2
+                },
+                "full": {
+                    "order_flow": 0.3,
+                    "quant_model": 0.3,
+                    "market_microstructure": 0.2,
+                    "momentum_technical": 0.1,
+                    "volume_liquidity_heatmaps": 0.1
+                }
+            }
+
+            score = calculate_direction_score(signal_weights[mode], scores)
+
             bias = interpret_score(score)
 
             st.metric("Prediction Score", f"{score:.2f}")
