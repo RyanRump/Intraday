@@ -187,7 +187,10 @@ if st.button("Run Live Prediction"):
         if df.empty or 'close' not in df.columns:
             st.error("No valid intraday data returned. Please check the ticker symbol, market hours, or your API subscription level.")
         else:
-            scores = compute_signals(df)
+            if view_option == "Last 20 Bars (Zoomed In)":
+                scores = compute_signals(df.tail(20))
+            else:
+                scores = compute_signals(df)
             score = calculate_direction_score(signal_weights, scores)
             bias = interpret_score(score)
 
