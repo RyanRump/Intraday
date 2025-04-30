@@ -122,7 +122,7 @@ def compute_signals(df, mode="full"):
         'machine_learning_prediction': 0.3,
         'news_sentiment': 0.2,
         'random_noise': 0.1
-    }
+    }, df
 
 # Score interpretation
 def calculate_direction_score(weights, scores):
@@ -236,12 +236,14 @@ if st.button("Run Live Prediction"):
         else:
             data_for_signals = df.tail(20) if view_option == "Last 20 Bars (Zoomed In)" else df
             mode = "short" if view_option == "Last 20 Bars (Zoomed In)" else "full"
-            scores = compute_signals(data_for_signals, mode=mode)
+            scores, enriched_df = compute_signals(data_for_signals, mode=mode)
 
             # ✅ These must come AFTER data_for_signals is defined
             st.markdown("### Signal Insights")
-            st.markdown(f"- RSI: `{data_for_signals['rsi'].iloc[-1]:.2f}`")
-            st.markdown(f"- MA5 vs MA20: `{data_for_signals['ma_fast'].iloc[-1]:.2f}` vs `{data_for_signals['ma_slow'].iloc[-1]:.2f}`")
+            if 'rsi' in enriched_df.columns:
+                st.markdown(f"** RSI: `{enriched_df['rsi'].iloc[-1]:.2f}`")
+            if 'ma_fast' in enriched_df.columns and 'ma_slow' in enriched_df.columns:
+                st.markdown(f"** MAS vs MA20: `{enriched_df['ma_fast'].iloc[-1]:.2f}` vs `{enriched_df['ma_slow'].iloc[-1]:.2f}`")
 
             signal_weights = {
                 "short": {
