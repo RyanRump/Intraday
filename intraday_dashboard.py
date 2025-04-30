@@ -221,6 +221,8 @@ if st.button("Run Live Prediction"):
             data_for_signals = df.tail(20) if view_option == "Last 20 Bars (Zoomed In)" else df
             mode = "short" if view_option == "Last 20 Bars (Zoomed In)" else "full"
             scores = compute_signals(data_for_signals, mode=mode)
+
+            # ✅ These must come AFTER data_for_signals is defined
             st.markdown("### Signal Insights")
             st.markdown(f"- RSI: `{data_for_signals['rsi'].iloc[-1]:.2f}`")
             st.markdown(f"- MA5 vs MA20: `{data_for_signals['ma_fast'].iloc[-1]:.2f}` vs `{data_for_signals['ma_slow'].iloc[-1]:.2f}`")
@@ -241,7 +243,6 @@ if st.button("Run Live Prediction"):
             }
 
             score = calculate_direction_score(signal_weights[mode], scores)
-
             bias = interpret_score(score)
 
             st.metric("Prediction Score", f"{score:.2f}")
