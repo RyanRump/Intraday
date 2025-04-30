@@ -62,6 +62,10 @@ def compute_signals(df, mode="full"):
 
     df = df.copy()
 
+    if mode == "short":
+        df["weight"] = [0.1 * (i + 1) for i in range(len(df))]
+        df["weight"] /= df["weight"].sum()  # normalize to sum to 1
+
     # Use shorter indicators for zoomed-in view
     if mode == "short":
         rsi_period = 7
@@ -90,6 +94,18 @@ def compute_signals(df, mode="full"):
             'news_sentiment': 0.5,
             'random_noise': 0.5
         }
+    
+    # Weighted momentum example (for "short" mode)
+    if mode == "short" and 'weight' in df.columns:
+        try:
+            # Compare recent MA crossovers, weighted
+            ma_diff = df['ma_fast'] - df['ma_slow']
+            momentum_score = (ma_diff * df['weight']).sum()
+            momentum_score = 1.0 if momentum_score > 0 else 0.0
+        except:
+            momentum_score = 0.5
+    else:
+        momentum_score = 1.0 if df['ma_fast'].iloc[-1] > df['ma_slow'].iloc[-1] else 0.3
 
     if df.empty:
         return {}
@@ -100,7 +116,7 @@ def compute_signals(df, mode="full"):
         'order_flow': 0.7,
         'quant_model': 0.6,
         'market_microstructure': 0.6,
-        'momentum_technical': 1.0 if latest['ma_fast'] > latest['ma_slow'] else 0.3,
+        'momentum_technical': momentum_score,
         'volume_liquidity_heatmaps': 0.4,
         'gamma_options_flow': 0.5,
         'machine_learning_prediction': 0.3,
@@ -271,8 +287,11 @@ if st.button("Run Live Prediction"):
 
             # Optional insights for user
             st.markdown("### Signal Insights")
-            st.markdown(f"- RSI: `{data_for_signals['rsi'].iloc[-1]:.2f}`")
-            st.markdown(f"- MA5 vs MA20: `{data_for_signals['ma_fast'].iloc[-1]:.2f}` vs `{data_for_signals['ma_slow'].iloc[-1]:.2f}`")
+            if 'rsi' in data_for_signals.columns:
+                st.markdown(f"** RSI: `{data_for_signals['rsi'].iloc[-1]:.2f}`")
+
+            if 'ma_fast' in data_for_signals.columns and 'ma_slow' in data_for_signals.columns:
+                st.markdown(f"** MAS vs MA20: `{data_for_signals['ma_fast'].iloc[-1]:.2f}` vs `{data_for_signals['ma_slow'].iloc[-1]:.2f}`")
 
             # Alerts
             if score > 0.68:
