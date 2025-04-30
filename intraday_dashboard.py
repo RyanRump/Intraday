@@ -221,10 +221,10 @@ if st.button("Run Live Prediction"):
             st.markdown(f"- MA5 vs MA20: `{df['ma5'].iloc[-1]:.2f}` vs `{df['ma20'].iloc[-1]:.2f}`")
 
             # Alerts
-            if score > 0.7:
+            if score > 0.68:
                 st.warning("🚨 STRONG Bullish Signal!")
                 st.audio("https://www.soundjay.com/button/beep-07.wav", autoplay=True)
-            elif score < 0.3:
+            elif score < 0.32:
                 st.warning("🚨 STRONG Bearish Signal!")
                 st.audio("https://www.soundjay.com/button/beep-08b.wav", autoplay=True)
             else:
