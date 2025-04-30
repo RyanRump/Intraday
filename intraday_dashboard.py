@@ -88,6 +88,30 @@ def interpret_score(score):
         return "↓ Bearish Bias"
     return "→ Sideways / Neutral"
 
+def get_options_flow(symbol):
+    import yfinance as yf
+    import pandas as pd
+
+    try:
+        ticker = yf.Ticker(symbol)
+        exp_dates = ticker.options
+
+        if not exp_dates:
+            raise ValueError(f"No expiration dates found for symbol: {symbol}")
+
+        chain = ticker.option_chain(exp_dates[0])
+        calls = chain.calls
+        puts = chain.puts
+
+        calls["Type"] = "call"
+        puts["Type"] = "put"
+
+        all_options = pd.concat([calls, puts], ignore_index=True)
+        return all_options
+
+    except Exception as e:
+        raise ValueError(f"Failed to retrieve option chain for {symbol}: {e}")
+
 def plot_close_chart(df, title="Price Movement", zoom=False):
     df = df.copy()
     df['timestamp'] = df.index.tz_convert('America/New_York')
