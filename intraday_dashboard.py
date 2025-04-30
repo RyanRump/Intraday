@@ -267,8 +267,8 @@ if st.button("Run Live Prediction"):
 
             # Optional insights for user
             st.markdown("### Signal Insights")
-            st.markdown(f"- RSI: `{df['rsi'].iloc[-1]:.2f}`")
-            st.markdown(f"- MA5 vs MA20: `{df['ma5'].iloc[-1]:.2f}` vs `{df['ma20'].iloc[-1]:.2f}`")
+            st.markdown(f"- RSI: `{data_for_signals['rsi'].iloc[-1]:.2f}`")
+            st.markdown(f"- MA5 vs MA20: `{data_for_signals['ma_fast'].iloc[-1]:.2f}` vs `{data_for_signals['ma_slow'].iloc[-1]:.2f}`")
 
             # Alerts
             if score > 0.68:
