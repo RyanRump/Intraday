@@ -4,6 +4,8 @@ import pandas as pd
 from alpaca_trade_api.rest import REST
 import ta
 import altair as alt
+import yfinance as yf
+
 
 # Streamlit Secrets for Alpaca API keys
 API_KEY = st.secrets["API_KEY"]
@@ -105,6 +107,44 @@ def plot_close_chart(df, title="Price Movement", zoom=False):
 
     st.altair_chart(chart, use_container_width=True)
 
+from statistics import mean
+
+def get_options_flow(symbol):
+    try:
+        ticker = yf.Ticker(symbol)
+        exp_dates = ticker.options
+
+        if not exp_dates:
+            return {"error": "No expirations found"}
+
+        # Use nearest expiration
+        chain = ticker.option_chain(exp_dates[0])
+        calls = chain.calls
+        puts = chain.puts
+
+        call_volume = calls['volume'].sum()
+        put_volume = puts['volume'].sum()
+
+        bullish_ratio = call_volume / (call_volume + put_volume + 1e-6)  # avoid div by 0
+
+        avg_call_iv = mean(calls['impliedVolatility'].dropna())
+        avg_put_iv = mean(puts['impliedVolatility'].dropna())
+
+        # Create a basic scoring model (you can improve this)
+        score = 0.5 + (bullish_ratio - 0.5) * 1.5  # boost if skewed bullish
+
+        return {
+            "call_volume": int(call_volume),
+            "put_volume": int(put_volume),
+            "bullish_ratio": round(bullish_ratio, 2),
+            "avg_call_iv": round(avg_call_iv, 3),
+            "avg_put_iv": round(avg_put_iv, 3),
+            "suggested_signal_score": round(score, 2)
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
+
 # UI
 st.title("📈 Intraday Direction Prediction Dashboard")
 
@@ -129,6 +169,19 @@ if st.button("Run Live Prediction"):
 
             st.metric("Prediction Score", f"{score:.2f}")
             st.subheader(f"Market Bias: {bias}")
+
+            # Fetch and display options flow from Yahoo Finance
+            with st.expander("📊 Options Flow Snapshot (Yahoo Finance)", expanded=False):
+                try:
+                    options_data = get_options_flow(symbol)
+                    st.write("Calls (Volume > 0):")
+                    st.dataframe(options_data[options_data['Type'] == 'call'][['Strike', 'Last Price', 'Bid', 'Ask', 'Volume', 'Open Interest']])
+
+                    st.write("Puts (Volume > 0):")
+                    st.dataframe(options_data[options_data['Type'] == 'put'][['Strike', 'Last Price', 'Bid', 'Ask', 'Volume', 'Open Interest']])
+                except Exception as e:
+                    st.error(f"Options flow data not available for {symbol}: {e}")
+
 
             # Chart logic based on dropdown selection
             if view_option == "Last 20 Bars (Zoomed In)":
