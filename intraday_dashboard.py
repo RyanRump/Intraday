@@ -182,7 +182,6 @@ if st.button("Run Live Prediction"):
                 except Exception as e:
                     st.error(f"Options flow data not available for {symbol}: {e}")
 
-
             # Chart logic based on dropdown selection
             if view_option == "Last 20 Bars (Zoomed In)":
                 plot_close_chart(df, zoom=True)
