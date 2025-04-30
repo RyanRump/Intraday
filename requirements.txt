@@ -2,3 +2,4 @@ streamlit
 alpaca-trade-api
 pandas
 ta
+yfinance
