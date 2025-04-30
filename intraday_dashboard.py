@@ -77,7 +77,7 @@ def interpret_score(score):
 
 def plot_close_chart(df, title="Price Movement", zoom=False):
     df = df.copy()
-    df['timestamp'] = df.index
+    df['timestamp'] = df.index.tz_convert('America/New_York')
 
     if zoom:
         df = df.tail(20)
