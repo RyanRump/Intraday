@@ -47,16 +47,19 @@ def compute_signals(df):
     df['rsi'] = ta.momentum.RSIIndicator(df['close']).rsi()
     df['ma5'] = df['close'].rolling(5).mean()
     df['ma20'] = df['close'].rolling(20).mean()
+    df['pct_change'] = df['close'].pct_change()
+    
     latest = df.iloc[-1]
+
     return {
-        'order_flow': 0.7,
-        'quant_model': 0.6,
-        'market_microstructure': 0.6,
+        'order_flow': df['volume'].iloc[-1] / df['volume'].rolling(20).mean().iloc[-1],  # relative volume
+        'quant_model': (latest['close'] - df['open'].iloc[-1]) / df['open'].iloc[-1],   # intraday return
+        'market_microstructure': df['pct_change'].std() * 100,  # volatility signal
         'momentum_technical': 1.0 if latest['ma5'] > latest['ma20'] else 0.3,
-        'volume_liquidity_heatmaps': 0.4,
-        'gamma_options_flow': 0.5,
-        'machine_learning_prediction': 0.3,
-        'news_sentiment': 0.2,
+        'volume_liquidity_heatmaps': df['volume'].tail(10).mean() / df['volume'].mean(),
+        'gamma_options_flow': 0.5,  # placeholder, no real gamma input
+        'machine_learning_prediction': latest['rsi'] / 100,  # simplistic approximation
+        'news_sentiment': 0.2,  # placeholder
         'random_noise': 0.1
     }
 
@@ -89,7 +92,19 @@ if st.button("Run Live Prediction"):
 
             st.metric("Prediction Score", f"{score:.2f}")
             st.subheader(f"Market Bias: {bias}")
-            st.line_chart(df['close'])
+
+            # Add dropdown to choose chart view
+            view_option = st.selectbox(
+                "Chart View",
+                ("Last 20 Bars (Zoomed In)", "Full Session")
+            )
+
+            # Plot based on selection
+            if view_option == "Last 20 Bars (Zoomed In)":
+                st.line_chart(df['close'].tail(20))
+            else:
+                st.line_chart(df['close'])
+
 
             if score > 0.7:
                 st.warning("🚨 STRONG Bullish Signal!")
