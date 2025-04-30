@@ -32,16 +32,27 @@ signal_weights = {
 }
 
 # Get recent data
-def get_intraday_data(symbol='SPY', interval='1Min', limit=100):
-    bars = api.get_bars(symbol, timeframe=interval, limit=limit)
+from datetime import datetime, timedelta
+import pytz
 
-    # Safely convert to DataFrame
+def get_intraday_data(symbol='SPY', interval='1Min', limit=100):
+    now = datetime.now(pytz.timezone("America/New_York"))
+    start = now.replace(hour=9, minute=30, second=0, microsecond=0)
+    end = now
+
+    bars = api.get_bars(
+        symbol,
+        timeframe=interval,
+        start=start.isoformat(),
+        end=end.isoformat()
+    )
+
     if hasattr(bars, 'df'):
         df = bars.df
-        df.index = pd.to_datetime(df.index)  # optional, for clarity
+        df.index = pd.to_datetime(df.index).tz_convert('America/New_York')
         return df
     else:
-        return pd.DataFrame()  # fallback in rare cases
+        return pd.DataFrame()
 
 # Compute signal scores
 def compute_signals(df):
