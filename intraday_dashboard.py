@@ -7,9 +7,15 @@ import ta
 # Streamlit Secrets for Alpaca API keys
 API_KEY = st.secrets["API_KEY"]
 API_SECRET = st.secrets["API_SECRET"]
-BASE_URL = st.secrets["BASE_URL"]
+MODE = st.secrets.get("MODE", "paper")
 
-api = REST(API_KEY, API_SECRET, base_url=BASE_URL)
+if MODE == "paper":
+    BASE_URL = "https://paper-api.alpaca.markets"
+else:
+    BASE_URL = "https://api.alpaca.markets"
+
+
+api = REST(API_KEY, API_SECRET, base_url=BASE_URL, api_version='v2')
 
 # Signal weightings
 signal_weights = {
@@ -26,8 +32,15 @@ signal_weights = {
 
 # Get recent data
 def get_intraday_data(symbol='SPY', interval='1Min', limit=100):
-    bars = api.get_bars(symbol, interval, limit=limit).df
-    return bars[bars['symbol'] == symbol]
+    bars = api.get_bars(symbol, timeframe=interval, limit=limit)
+
+    # Safely convert to DataFrame
+    if hasattr(bars, 'df'):
+        df = bars.df
+        df.index = pd.to_datetime(df.index)  # optional, for clarity
+        return df
+    else:
+        return pd.DataFrame()  # fallback in rare cases
 
 # Compute signal scores
 def compute_signals(df):
@@ -65,17 +78,22 @@ symbol = st.text_input("Enter Ticker Symbol", value="SPY")
 if st.button("Run Live Prediction"):
     with st.spinner("Fetching live data and calculating signals..."):
         df = get_intraday_data(symbol)
-        scores = compute_signals(df)
-        score = calculate_direction_score(signal_weights, scores)
-        bias = interpret_score(score)
+        
+        if df.empty or 'close' not in df.columns:
+            st.error("No valid intraday data returned. Please check the ticker symbol, market hours, or your API subscription level.")
 
-        st.metric("Prediction Score", f"{score:.2f}")
-        st.subheader(f"Market Bias: {bias}")
-        st.line_chart(df['close'])
+        else:
+            scores = compute_signals(df)
+            score = calculate_direction_score(signal_weights, scores)
+            bias = interpret_score(score)
 
-        if score > 0.7:
-            st.warning("🚨 STRONG Bullish Signal!")
-            st.audio("https://www.soundjay.com/button/beep-07.wav", autoplay=True)
-        elif score < 0.3:
-            st.warning("🚨 STRONG Bearish Signal!")
-            st.audio("https://www.soundjay.com/button/beep-08b.wav", autoplay=True)
+            st.metric("Prediction Score", f"{score:.2f}")
+            st.subheader(f"Market Bias: {bias}")
+            st.line_chart(df['close'])
+
+            if score > 0.7:
+                st.warning("🚨 STRONG Bullish Signal!")
+                st.audio("https://www.soundjay.com/button/beep-07.wav", autoplay=True)
+            elif score < 0.3:
+                st.warning("🚨 STRONG Bearish Signal!")
+                st.audio("https://www.soundjay.com/button/beep-08b.wav", autoplay=True)
