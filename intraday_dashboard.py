@@ -76,15 +76,21 @@ def interpret_score(score):
 
 # UI
 st.title("📈 Intraday Direction Prediction Dashboard")
+
 symbol = st.text_input("Enter Ticker Symbol", value="SPY")
+
+# Move chart view selector *above* the prediction button so it persists
+view_option = st.selectbox(
+    "Chart View",
+    ("Last 20 Bars (Zoomed In)", "Full Session")
+)
 
 if st.button("Run Live Prediction"):
     with st.spinner("Fetching live data and calculating signals..."):
         df = get_intraday_data(symbol)
-        
+
         if df.empty or 'close' not in df.columns:
             st.error("No valid intraday data returned. Please check the ticker symbol, market hours, or your API subscription level.")
-
         else:
             scores = compute_signals(df)
             score = calculate_direction_score(signal_weights, scores)
@@ -93,22 +99,22 @@ if st.button("Run Live Prediction"):
             st.metric("Prediction Score", f"{score:.2f}")
             st.subheader(f"Market Bias: {bias}")
 
-            # Add dropdown to choose chart view
-            view_option = st.selectbox(
-                "Chart View",
-                ("Last 20 Bars (Zoomed In)", "Full Session")
-            )
-
-            # Plot based on selection
+            # Chart logic based on dropdown selection
             if view_option == "Last 20 Bars (Zoomed In)":
                 st.line_chart(df['close'].tail(20))
             else:
                 st.line_chart(df['close'])
 
+            # Optional insights for user
+            st.markdown("### Signal Insights")
+            st.markdown(f"- RSI: `{df['rsi'].iloc[-1]:.2f}`")
+            st.markdown(f"- MA5 vs MA20: `{df['ma5'].iloc[-1]:.2f}` vs `{df['ma20'].iloc[-1]:.2f}`")
 
+            # Alerts
             if score > 0.7:
                 st.warning("🚨 STRONG Bullish Signal!")
                 st.audio("https://www.soundjay.com/button/beep-07.wav", autoplay=True)
             elif score < 0.3:
                 st.warning("🚨 STRONG Bearish Signal!")
                 st.audio("https://www.soundjay.com/button/beep-08b.wav", autoplay=True)
+
