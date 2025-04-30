@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 from alpaca_trade_api.rest import REST
 import ta
+import altair as alt
 
 # Streamlit Secrets for Alpaca API keys
 API_KEY = st.secrets["API_KEY"]
@@ -74,6 +75,25 @@ def interpret_score(score):
         return "↓ Bearish Bias"
     return "→ Sideways / Neutral"
 
+def plot_close_chart(df, title="Price Movement", zoom=False):
+    df = df.copy()
+    df['timestamp'] = df.index
+
+    if zoom:
+        df = df.tail(20)
+
+    chart = alt.Chart(df).mark_line(point=True).encode(
+        x=alt.X('timestamp:T', title='Time'),
+        y=alt.Y('close:Q', title='Price', scale=alt.Scale(zero=False)),
+        tooltip=['timestamp:T', 'close:Q']
+    ).properties(
+        title=title,
+        width=700,
+        height=300
+    ).interactive()
+
+    st.altair_chart(chart, use_container_width=True)
+
 # UI
 st.title("📈 Intraday Direction Prediction Dashboard")
 
@@ -101,9 +121,9 @@ if st.button("Run Live Prediction"):
 
             # Chart logic based on dropdown selection
             if view_option == "Last 20 Bars (Zoomed In)":
-                st.line_chart(df['close'].tail(20))
+                plot_close_chart(df, zoom=True)
             else:
-                st.line_chart(df['close'])
+                plot_close_chart(df)
 
             # Optional insights for user
             st.markdown("### Signal Insights")
