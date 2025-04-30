@@ -57,23 +57,54 @@ def get_intraday_data(symbol='SPY', interval='1Min', limit=100):
         return pd.DataFrame()
 
 # Compute signal scores
-def compute_signals(df):
-    df['rsi'] = ta.momentum.RSIIndicator(df['close']).rsi()
-    df['ma5'] = df['close'].rolling(5).mean()
-    df['ma20'] = df['close'].rolling(20).mean()
-    df['pct_change'] = df['close'].pct_change()
-    
+def compute_signals(df, mode="full"):
+    import ta
+
+    df = df.copy()
+
+    # Use shorter indicators for zoomed-in view
+    if mode == "short":
+        rsi_period = 7
+        ma_fast = 5
+        ma_slow = 10
+    else:
+        rsi_period = 14
+        ma_fast = 5
+        ma_slow = 20
+
+    # Calculate indicators
+    try:
+        df['rsi'] = ta.momentum.RSIIndicator(df['close'], window=rsi_period).rsi()
+        df['ma_fast'] = df['close'].rolling(ma_fast).mean()
+        df['ma_slow'] = df['close'].rolling(ma_slow).mean()
+        df = df.dropna()
+    except Exception:
+        return {
+            'order_flow': 0.5,
+            'quant_model': 0.5,
+            'market_microstructure': 0.5,
+            'momentum_technical': 0.5,
+            'volume_liquidity_heatmaps': 0.5,
+            'gamma_options_flow': 0.5,
+            'machine_learning_prediction': 0.5,
+            'news_sentiment': 0.5,
+            'random_noise': 0.5
+        }
+
+    if df.empty:
+        return {}
+
     latest = df.iloc[-1]
 
     return {
-        'order_flow': df['volume'].iloc[-1] / df['volume'].rolling(20).mean().iloc[-1],  # relative volume
-        'quant_model': (latest['close'] - df['open'].iloc[-1]) / df['open'].iloc[-1],   # intraday return
-        'market_microstructure': df['pct_change'].std() * 100,  # volatility signal
-        'momentum_technical': 1.0 if latest['ma5'] > latest['ma20'] else 0.3,
-        'volume_liquidity_heatmaps': df['volume'].tail(10).mean() / df['volume'].mean(),
-        'gamma_options_flow': 0.5,  # placeholder, no real gamma input
-        'machine_learning_prediction': latest['rsi'] / 100,  # simplistic approximation
-        'news_sentiment': 0.2,  # placeholder
+        'order_flow': 0.7,
+        'quant_model': 0.6,
+        'market_microstructure': 0.6,
+        'momentum_technical': 1.0 if latest['ma_fast'] > latest['ma_slow'] else 0.3,
+        'volume_liquidity_heatmaps': 0.4,
+        'gamma_options_flow': 0.5,
+        'machine_learning_prediction': 0.3,
+        'news_sentiment': 0.2,
         'random_noise': 0.1
     }
 
@@ -188,7 +219,8 @@ if st.button("Run Live Prediction"):
             st.error("No valid intraday data returned. Please check the ticker symbol, market hours, or your API subscription level.")
         else:
             data_for_signals = df.tail(20) if view_option == "Last 20 Bars (Zoomed In)" else df
-            scores = compute_signals(data_for_signals)
+            mode = "short" if view_option == "Last 20 Bars (Zoomed In)" else "full"
+            scores = compute_signals(data_for_signals, mode=mode)
             score = calculate_direction_score(signal_weights, scores)
             bias = interpret_score(score)
 
