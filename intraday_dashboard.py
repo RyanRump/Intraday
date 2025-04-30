@@ -196,19 +196,18 @@ if st.button("Run Live Prediction"):
 
             # Fetch and display options flow from Yahoo Finance
             with st.expander("📊 Options Flow Snapshot (Yahoo Finance)", expanded=False):
-                    try:
-                        options_data = get_options_flow(symbol)
+                try:
+                    options_data = get_options_flow(symbol)
+                    if isinstance(options_data, pd.DataFrame) and 'Type' in options_data.columns and not options_data.empty:
+                        st.write("Calls (Volume > 0):")
+                        st.dataframe(options_data[options_data['Type'] == 'call'][['Strike', 'Last Price', 'Bid', 'Ask', 'Volume']])
 
-                        if 'Type' in options_data.columns and not options_data.empty:
-                            st.write("Calls (Volume > 0):")
-                            st.dataframe(options_data[options_data['Type'] == 'call'][['Strike', 'Last Price', 'Bid', 'Ask', 'Volume']])
-
-                            st.write("Puts (Volume > 0):")
-                            st.dataframe(options_data[options_data['Type'] == 'put'][['Strike', 'Last Price', 'Bid', 'Ask', 'Volume']])
-                        else:
-                            st.error(f"Options flow data not available or malformed for: {symbol}")
-                    except Exception as e:
-                        st.error(f"Options flow data fetch error for {symbol}: {e}")
+                        st.write("Puts (Volume > 0):")
+                        st.dataframe(options_data[options_data['Type'] == 'put'][['Strike', 'Last Price', 'Bid', 'Ask', 'Volume']])
+                    else:
+                        st.error(f"Options flow data not available or malformed for: {symbol}")
+                except Exception as e:
+                    st.error(f"Options flow data fetch error for {symbol}: {e}")
 
             # Chart logic based on dropdown selection
             if view_option == "Last 20 Bars (Zoomed In)":
@@ -228,4 +227,7 @@ if st.button("Run Live Prediction"):
             elif score < 0.3:
                 st.warning("🚨 STRONG Bearish Signal!")
                 st.audio("https://www.soundjay.com/button/beep-08b.wav", autoplay=True)
+            else:
+                st.info("Market momentum is neutral or indecisive.")
+
 
