@@ -240,8 +240,11 @@ if st.button("Run Live Prediction"):
 
             # ✅ These must come AFTER data_for_signals is defined
             st.markdown("### Signal Insights")
-            if 'rsi' in enriched_df.columns:
+            if enriched_df is not None and 'rsi' in enriched_df.columns and not enriched_df['rsi'].isna().all():
                 st.markdown(f"** RSI: `{enriched_df['rsi'].iloc[-1]:.2f}`")
+            else:
+                st.markdown("** RSI: N/A")
+
             if 'ma_fast' in enriched_df.columns and 'ma_slow' in enriched_df.columns:
                 st.markdown(f"** MAS vs MA20: `{enriched_df['ma_fast'].iloc[-1]:.2f}` vs `{enriched_df['ma_slow'].iloc[-1]:.2f}`")
 
