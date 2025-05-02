@@ -5,7 +5,6 @@ from alpaca_trade_api.rest import REST
 import ta
 import altair as alt
 import yfinance as yf
-from streamlit_extras.st_autorefresh import st_autorefresh
 
 # Auto-refresh every 30 seconds (30,000 milliseconds)
 
@@ -18,7 +17,6 @@ if MODE == "paper":
     BASE_URL = "https://paper-api.alpaca.markets"
 else:
     BASE_URL = "https://api.alpaca.markets"
-
 
 api = REST(API_KEY, API_SECRET, base_url=BASE_URL, api_version='v2')
 
