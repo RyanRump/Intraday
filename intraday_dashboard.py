@@ -5,7 +5,10 @@ from alpaca_trade_api.rest import REST
 import ta
 import altair as alt
 import yfinance as yf
+from streamlit_autorefresh import st_autorefresh
 
+# Auto-refresh every 30 seconds (30,000 milliseconds)
+st_autorefresh(interval=30000, limit=None, key="refresh")
 
 # Streamlit Secrets for Alpaca API keys
 API_KEY = st.secrets["API_KEY"]
@@ -218,6 +221,12 @@ def get_options_flow(symbol):
 
 # UI
 st.title("📈 Intraday Direction Prediction Dashboard")
+
+# Add a checkbox for auto-refresh control
+auto_refresh = st.checkbox("🔄 Auto-Refresh Every 60 Seconds", value=True)
+
+if auto_refresh:
+    st_autorefresh(interval=60000, limit=None, key="refresh")
 
 symbol = st.text_input("Enter Ticker Symbol", value="SPY")
 
