@@ -1,8 +1,8 @@
-
 streamlit
 pandas
 altair
 yfinance
 alpaca-trade-api
 ta
-streamlit-extras
+git+https://github.com/arnaudmiribel/streamlit-extras.git
+
