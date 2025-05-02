@@ -108,7 +108,7 @@ def compute_signals(df, mode="full"):
         momentum_score = 1.0 if df['ma_fast'].iloc[-1] > df['ma_slow'].iloc[-1] else 0.3
 
     if df.empty:
-        return {}
+        return {}, pd.DataFrame()
 
     latest = df.iloc[-1]
 
