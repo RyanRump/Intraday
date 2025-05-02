@@ -3,3 +3,4 @@ alpaca-trade-api
 pandas
 ta
 yfinance
+streamlit-extras
