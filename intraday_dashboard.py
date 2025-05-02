@@ -298,14 +298,21 @@ if st.button("Run Live Prediction"):
             if 'ma_fast' in data_for_signals.columns and 'ma_slow' in data_for_signals.columns:
                 st.markdown(f"** MAS vs MA20: `{data_for_signals['ma_fast'].iloc[-1]:.2f}` vs `{data_for_signals['ma_slow'].iloc[-1]:.2f}`")
 
-            # Alerts
-            if score > 0.68:
-                st.warning("🚨 STRONG Bullish Signal!")
+            # Enhanced Alerts Based on Score Ranges
+            if score > 0.8:
+                st.success("🔥 VERY STRONG BULLISH SIGNAL!")
+                st.audio("https://www.soundjay.com/button/beep-09.wav", autoplay=True)
+            elif score >= 0.68:
+                st.success("🟢 Moderate Bullish Signal")
                 st.audio("https://www.soundjay.com/button/beep-07.wav", autoplay=True)
-            elif score < 0.32:
-                st.warning("🚨 STRONG Bearish Signal!")
+            elif score >= 0.4:
+                st.info("⚪️ Neutral Market - No strong trend")
+            elif score >= 0.25:
+                st.warning("🔴 Moderate Bearish Signal")
                 st.audio("https://www.soundjay.com/button/beep-08b.wav", autoplay=True)
             else:
-                st.info("Market momentum is neutral or indecisive.")
+                st.error("⚡ VERY STRONG BEARISH SIGNAL!")
+                st.audio("https://www.soundjay.com/button/beep-05.wav", autoplay=True)
+
 
 
