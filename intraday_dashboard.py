@@ -5,7 +5,6 @@ from alpaca_trade_api.rest import REST
 import ta
 import altair as alt
 import yfinance as yf
-from streamlit_autorefresh import st_autorefresh
 
 # Auto-refresh every 30 seconds (30,000 milliseconds)
 st_autorefresh(interval=30000, limit=None, key="refresh")
