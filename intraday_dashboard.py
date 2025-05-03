@@ -1,10 +1,11 @@
 
 import streamlit as st
 import pandas as pd
-from alpaca_trade_api.rest import REST
+from alpaca_trade_api.rest import REST, APIError
 import ta
 import altair as alt
 import yfinance as yf
+from requests.exceptions import HTTPError
 
 # Auto-refresh every 30 seconds (30,000 milliseconds)
 
@@ -42,18 +43,23 @@ def get_intraday_data(symbol='SPY', interval='1Min', limit=100):
     start = now.replace(hour=9, minute=30, second=0, microsecond=0)
     end = now
 
-    bars = api.get_bars(
-        symbol,
-        timeframe=interval,
-        start=start.isoformat(),
-        end=end.isoformat()
-    )
+    try:
+        bars = api.get_bars(
+            symbol,
+            timeframe=interval,
+            start=start.isoformat(),
+            end=end.isoformat()
+        )
 
-    if hasattr(bars, 'df'):
-        df = bars.df
-        df.index = pd.to_datetime(df.index).tz_convert('America/New_York')
-        return df
-    else:
+        if hasattr(bars, 'df'):
+            df = bars.df
+            df.index = pd.to_datetime(df.index).tz_convert('America/New_York')
+            return df
+        else:
+            return pd.DataFrame()
+    
+    except APIError:
+        # No data (like if market is closed)
         return pd.DataFrame()
     
 def micro_momentum(df):
