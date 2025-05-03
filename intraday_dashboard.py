@@ -55,6 +55,28 @@ def get_intraday_data(symbol='SPY', interval='1Min', limit=100):
         return df
     else:
         return pd.DataFrame()
+    
+def micro_momentum(df):
+    """Analyze very short-term momentum."""
+    df = df.copy()
+
+    # Short EMAs
+    df['ema_2'] = df['close'].ewm(span=2).mean()
+    df['ema_5'] = df['close'].ewm(span=5).mean()
+
+    # Rate of Change over last 3 closes
+    df['roc_3'] = df['close'].pct_change(periods=3)
+
+    # Most recent values
+    ema_bullish = df['ema_2'].iloc[-1] > df['ema_5'].iloc[-1]
+    roc_positive = df['roc_3'].iloc[-1] > 0
+
+    if ema_bullish and roc_positive:
+        return 1.0  # strong bullish micro-momentum
+    elif not ema_bullish and not roc_positive:
+        return 0.0  # strong bearish micro-momentum
+    else:
+        return 0.5  # neutral / mixed
 
 # Compute signal scores
 def compute_signals(df, mode="full"):
@@ -92,7 +114,9 @@ def compute_signals(df, mode="full"):
             'gamma_options_flow': 0.5,
             'machine_learning_prediction': 0.5,
             'news_sentiment': 0.5,
-            'random_noise': 0.5
+            'random_noise': 0.5,
+            'micro_momentum': micro_momentum(df),
+
         }
     
     # Weighted momentum example (for "short" mode)
@@ -249,6 +273,8 @@ if st.button("Run Live Prediction"):
 
             if 'ma_fast' in enriched_df.columns and 'ma_slow' in enriched_df.columns:
                 st.markdown(f"** MAS vs MA20: `{enriched_df['ma_fast'].iloc[-1]:.2f}` vs `{enriched_df['ma_slow'].iloc[-1]:.2f}`")
+
+            st.markdown(f"**Micro-Momentum Signal: `{scores.get('micro_momentum', 0.5):.2f}`**")
 
             signal_weights = {
                 "short": {
