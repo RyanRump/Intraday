@@ -264,7 +264,15 @@ if st.button("Run Live Prediction"):
         df = get_intraday_data(symbol)
 
         if df.empty or 'close' not in df.columns:
-            st.error("No valid intraday data returned. Please check the ticker symbol, market hours, or your API subscription level.")
+            now = datetime.now(pytz.timezone("America/New_York"))
+            weekday = now.weekday()  # 0=Monday, 6=Sunday
+            hour = now.hour
+
+            if weekday >= 5 or hour >= 16 or hour < 9:
+                st.warning("🚪 The market is currently closed. Please come back during regular hours (9:30 AM - 4:00 PM ET).")
+            else:
+                st.error("⚠️ No valid intraday data returned. Please check the ticker symbol, market hours, or your API subscription level.")
+
         else:
             data_for_signals = df.tail(20) if view_option == "Last 20 Bars (Zoomed In)" else df
             mode = "short" if view_option == "Last 20 Bars (Zoomed In)" else "full"
