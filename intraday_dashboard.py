@@ -260,23 +260,23 @@ view_option = st.selectbox(
 )
 
 if st.button("Run Live Prediction"):
-    with st.spinner("Fetching live data and calculating signals..."):
-        df = get_intraday_data(symbol)
+    now = datetime.now(pytz.timezone("America/New_York"))
+    weekday = now.weekday()  # 0=Monday, 6=Sunday
+    hour = now.hour
+    
+    if weekday >= 5 or hour >= 16 or hour < 9:
+        st.warning("🚪 The market is currently closed. Please come back during regular hours (9:30 AM - 4:00 PM ET).")
+    else:
+        with st.spinner("Fetching live data and calculating signals..."):
+            df = get_intraday_data(symbol)     
 
-        if df.empty or 'close' not in df.columns:
-            now = datetime.now(pytz.timezone("America/New_York"))
-            weekday = now.weekday()  # 0=Monday, 6=Sunday
-            hour = now.hour
-
-            if weekday >= 5 or hour >= 16 or hour < 9:
-                st.warning("🚪 The market is currently closed. Please come back during regular hours (9:30 AM - 4:00 PM ET).")
-            else:
+            if df.empty or 'close' not in df.columns:
                 st.error("⚠️ No valid intraday data returned. Please check the ticker symbol, market hours, or your API subscription level.")
 
-        else:
-            data_for_signals = df.tail(20) if view_option == "Last 20 Bars (Zoomed In)" else df
-            mode = "short" if view_option == "Last 20 Bars (Zoomed In)" else "full"
-            scores, enriched_df = compute_signals(data_for_signals, mode=mode)
+            else:
+                data_for_signals = df.tail(20) if view_option == "Last 20 Bars (Zoomed In)" else df
+                mode = "short" if view_option == "Last 20 Bars (Zoomed In)" else "full"
+                scores, enriched_df = compute_signals(data_for_signals, mode=mode)
 
             # ✅ These must come AFTER data_for_signals is defined
             st.markdown("### Signal Insights")
