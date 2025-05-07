@@ -7,6 +7,7 @@ import altair as alt
 import yfinance as yf
 from requests.exceptions import HTTPError
 
+
 # Auto-refresh every 30 seconds (30,000 milliseconds)
 
 # Streamlit Secrets for Alpaca API keys
@@ -306,6 +307,15 @@ if st.button("Run Live Prediction"):
             }
 
             score = calculate_direction_score(signal_weights[mode], scores)
+
+            # Display Prediction Signal
+            if score > 0.55:
+                st.success("📈 Prediction: Bullish", icon="✅")
+            elif score < 0.45:
+                st.error("📉 Prediction: Bearish", icon="❌")
+            else:
+                st.info("➖ Prediction: Neutral", icon="➖")
+
             bias = interpret_score(score)
 
             st.metric("Prediction Score", f"{score:.2f}")

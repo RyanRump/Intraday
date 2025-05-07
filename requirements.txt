@@ -5,6 +5,5 @@ yfinance
 alpaca-trade-api
 ta
 git+https://github.com/arnaudmiribel/streamlit-extras.git
-urllib3
 requests
 
