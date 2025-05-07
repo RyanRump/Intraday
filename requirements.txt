@@ -6,4 +6,5 @@ alpaca-trade-api
 ta
 git+https://github.com/arnaudmiribel/streamlit-extras.git
 requests
+urllib3
 
