@@ -336,6 +336,36 @@ if st.button("Run Live Prediction"):
                 except Exception as e:
                     st.error(f"Options flow data fetch error for {symbol}: {e}")
 
+            # --- BASIC EXAMPLE: Options Flow Heatmap (Dummy Numbers) ---
+
+            # Example dummy flow numbers
+            calls_bought = 120000
+            puts_bought = 80000
+
+            # Compare Calls vs Puts
+            if calls_bought > puts_bought:
+                signal = "Bullish Flow"
+                color = "green"
+            else:
+                signal = "Bearish Flow"
+                color = "red"
+
+            # Display the result
+            st.markdown("## 🧠 Options Flow Directional Heat")
+
+            st.markdown(
+                f"""
+                <div style='background-color:{color};
+                        padding:30px;
+                        border-radius:10px;
+                        text-align:center;
+                        box-shadow: 0 0 20px {color};'>
+                    <h1 style='color:white;'>{signal}</h1>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
             # Chart logic based on dropdown selection
             if view_option == "Last 20 Bars (Zoomed In)":
                 plot_close_chart(df, zoom=True)
