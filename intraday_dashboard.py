@@ -370,6 +370,27 @@ if st.button("Run Live Prediction"):
                 unsafe_allow_html=True
             )
 
+            # --- EMA Trend Detection ---
+            df['EMA_8'] = df['close'].ewm(span=8, adjust=False).mean()
+            df['EMA_21'] = df['close'].ewm(span=21, adjust=False).mean()
+
+            latest_ema8 = df['EMA_8'].iloc[-1]
+            latest_ema21 = df['EMA_21'].iloc[-1]
+
+            if latest_ema8 > latest_ema21:
+                trend_signal = "📈 Trend Confirmed: Bullish ✅"
+                trend_color = "green"
+            else:
+                trend_signal = "📉 Trend Confirmed: Bearish ❌"
+                trend_color = "red"
+
+            st.markdown("## 🔄 Trend Confirmation with EMA Cross")
+            st.markdown(
+                f"<div style='background-color:{trend_color};padding:15px;border-radius:10px;text-align:center;'>"
+                f"<h3 style='color:white;'>{trend_signal}</h3></div>",
+                unsafe_allow_html=True
+            )
+
             # Chart logic based on dropdown selection
             if view_option == "Last 20 Bars (Zoomed In)":
                 plot_close_chart(df, zoom=True)
