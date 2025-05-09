@@ -414,6 +414,27 @@ if st.button("Run Live Prediction"):
                 unsafe_allow_html=True
             )
 
+            # --- Final Trade Decision: Go / No-Go ---
+            go_signal = all([
+                calls_bought > puts_bought,
+                latest_ema8 > latest_ema21,
+                iv_change > 5
+            ])
+
+            if go_signal:
+                decision = "✅ TRADE GO"
+                decision_color = "green"
+            else:
+                decision = "❌ NO GO"
+                decision_color = "red"
+
+            st.markdown("## 🎯 Final Trade Decision")
+            st.markdown(
+                f"<div style='background-color:{decision_color};padding:25px;border-radius:12px;text-align:center;'>"
+                f"<h2 style='color:white;'>{decision}</h2></div>",
+                unsafe_allow_html=True
+            )
+
             # Chart logic based on dropdown selection
             if view_option == "Last 20 Bars (Zoomed In)":
                 plot_close_chart(df, zoom=True)
