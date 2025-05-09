@@ -391,6 +391,29 @@ if st.button("Run Live Prediction"):
                 unsafe_allow_html=True
             )
 
+            # --- Simulated IV Data (temporary until live feed is added) ---
+            import random
+
+            # Simulate current IV and IV from 5 minutes ago
+            iv_now = random.uniform(0.30, 0.50)         # Current IV (e.g., 40%)
+            iv_5min_ago = iv_now * random.uniform(0.90, 1.05)  # Prior IV (simulate close value)
+
+            iv_change = ((iv_now - iv_5min_ago) / iv_5min_ago) * 100
+
+            if iv_change > 5:
+                iv_alert = f"⚠️ IV Spike Detected! (+{iv_change:.1f}%)"
+                iv_color = "orange"
+            else:
+                iv_alert = f"🧊 No IV Spike (Δ {iv_change:.1f}%)"
+                iv_color = "gray"
+
+            st.markdown("## ⚡ Volatility Spike Detection")
+            st.markdown(
+                f"<div style='background-color:{iv_color};padding:15px;border-radius:10px;text-align:center;'>"
+                f"<h3 style='color:white;'>{iv_alert}</h3></div>",
+                unsafe_allow_html=True
+            )
+
             # Chart logic based on dropdown selection
             if view_option == "Last 20 Bars (Zoomed In)":
                 plot_close_chart(df, zoom=True)
