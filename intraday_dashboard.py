@@ -338,9 +338,13 @@ if st.button("Run Live Prediction"):
 
             # --- BASIC EXAMPLE: Options Flow Heatmap (Dummy Numbers) ---
 
-            # Example dummy flow numbers
-            calls_bought = 120000
-            puts_bought = 80000
+            # Calculate real Calls and Puts from options_data
+            if isinstance(options_data, pd.DataFrame) and not options_data.empty:
+                calls_bought = options_data[options_data['Type'] == 'call']['Volume'].sum()
+                puts_bought = options_data[options_data['Type'] == 'put']['Volume'].sum()
+            else:
+                calls_bought = 0
+                puts_bought = 0
 
             # Compare Calls vs Puts
             if calls_bought > puts_bought:
