@@ -285,9 +285,8 @@ with st.container():
 
     with col3:
         if st.button("🔁 Run Live Prediction"):
-    
-    last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.markdown(f"<p style='text-align:right;color:gray;'>Last Updated: {last_updated}</p>", unsafe_allow_html=True)
+            last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            st.markdown(f"<p style='text-align:right;color:gray;'>Last Updated: {last_updated}</p>", unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
