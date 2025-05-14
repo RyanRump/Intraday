@@ -298,7 +298,11 @@ with st.container():
         st.warning("🚪 The market is currently closed. Please come back during regular hours (9:30 AM - 4:00 PM ET).")
     else:
         with st.spinner("Fetching live data and calculating signals..."):
-            df = get_intraday_data(symbol)     
+            try:
+                df = get_intraday_data(symbol)
+            except Exception as e:
+                st.error(f"❌ Failed to fetch intraday data: {e}")
+                st.stop()
 
             if df.empty or 'close' not in df.columns:
                 st.error("⚠️ No valid intraday data returned. Please check the ticker symbol, market hours, or your API subscription level.")
