@@ -252,15 +252,46 @@ st.title("📈 Intraday Direction Prediction Dashboard")
 
 # Add a checkbox for auto-refresh control
 
-symbol = st.text_input("Enter Ticker Symbol", value="SPY")
+# --- Cleaned Up Top Control Panel ---
+import datetime
 
-# Move chart view selector *above* the prediction button so it persists
-view_option = st.selectbox(
-    "Chart View",
-    ("Last 20 Bars (Zoomed In)", "Full Session")
-)
+with st.container():
+    st.markdown("""
+        <style>
+        .big-header {
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 0;
+        }
+        .subtle-card {
+            background-color: #1f1f1f;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.25);
+            margin-bottom: 20px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-if st.button("Run Live Prediction"):
+    st.markdown("<div class='subtle-card'>", unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns([2, 2, 2])
+
+    with col1:
+        symbol = st.text_input("📈 Ticker Symbol", value="SPY")
+
+    with col2:
+        view_option = st.selectbox("🕵️‍♂️ View Mode", ["Last 20 Bars (Zoomed In)", "Full Session"])
+
+    with col3:
+        if st.button("🔁 Run Live Prediction"):
+            st.experimental_rerun()
+
+    last_updated = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    st.markdown(f"<p style='text-align:right;color:gray;'>Last Updated: {last_updated}</p>", unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
     now = datetime.now(pytz.timezone("America/New_York"))
     weekday = now.weekday()  # 0=Monday, 6=Sunday
     hour = now.hour
