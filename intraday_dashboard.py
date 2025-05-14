@@ -253,7 +253,7 @@ st.title("📈 Intraday Direction Prediction Dashboard")
 # Add a checkbox for auto-refresh control
 
 # --- Cleaned Up Top Control Panel ---
-import datetime
+from datetime import datetime
 
 with st.container():
     st.markdown("""
